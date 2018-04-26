@@ -29,6 +29,7 @@ export default {
 					break;
 
 				case 'i':
+					window.Event.$emit('sudoku-event', 'square-select-intersection', {selected: true, reqBy: this.squareId});
 					break;
 
 				case 'n':

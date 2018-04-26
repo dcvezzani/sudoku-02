@@ -147,6 +147,13 @@ export default {
 					squareIds = gatherCol(opts.reqBy);
 					window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
 					break;
+
+				case 'square-select-intersection':
+					// console.log([`opts:trace 1`, opts]);  
+					squareIds = gatherRow(opts.reqBy);
+					const squareIds2 = gatherCol(opts.reqBy);
+					window.Event.$emit('square-event', { cmd: 'select', opts: {only: [...squareIds, ...squareIds2], ...opts} } );
+					break;
 			}
 		});
 	}
