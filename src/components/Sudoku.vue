@@ -143,7 +143,7 @@ export default {
 					break;
 
 				case 'record-number':
-					window.Event.$emit(`square-event-${this.selected}`, { cmd: 'record-number', opts: {...opts, reqBy: this.selected} } );
+					window.Event.$emit(`square-event-${this.selected}`, { cmd: 'record-number', opts: {...opts, reqBy: this.selected, editMode: this.editMode} } );
 					// console.log([`sudoku-event 1`, cmd, opts, this.selected])
 					break;
 

@@ -58,14 +58,27 @@ export default {
 			}
 		},
   }, 
+
 	mounted() {
 		window.Event.$on(`square-event-${this.squareId}`, ({ cmd, opts }) => {
 			switch(cmd) {
 				case 'record-number':
-					const { value } = opts;
+					const { value, editMode } = opts;
 					console.log([`square-event-${this.squareId}`, cmd, opts, value])
-					this.value = value;
-					this.penciledValues = [];
+
+					if (editMode === 'pencil') {
+						if (_.isNil(this.value)) {
+							if (_.includes(this.penciledValues, value)) {
+								this.penciledValues = _.remove(this.penciledValues, item => item !== value);
+							} else {
+								this.penciledValues.push(value);
+								this.penciledValues.sort();
+							}
+						}
+					} else {
+						this.value = value;
+						this.penciledValues = [];
+					}
 					break;
 			}
 		});
@@ -120,8 +133,7 @@ export default {
 		background-color: #bdcebe;
 	}
 	
-	.sudoku .sudoku-square.selected, 
-	.sudoku.pencil .sudoku-square.selected {
+	.sudoku .sudoku-square.selected{
 		background-color: orange;
 	}
 	
