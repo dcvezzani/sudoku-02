@@ -1,5 +1,7 @@
 <template>
-	<div @click="toggle" :id="squareId" :class="['sudoku-square', (selected) ? 'selected' : '']"></div>
+	<div @click="toggle" :id="squareId" :class="classNames">
+		<div :class="valueClassNames">{{displayValues}}</div>
+	</div>
 </template>
 
 <script>
@@ -13,11 +15,26 @@ export default {
     return {
       msg: 'Welcome to Your Vue.js App',
 			selected: false,
+			value: null,
+			penciledValues: [],
     }
   }, 
+	computed: {
+		classNames() { return ['sudoku-square', (this.selected) ? 'selected' : '',]; },
+		valueClassNames() { return ['values', (this.penciledValues.length > 0) ? 'penciled' : '']; },
+		displayValues() {
+			if (this.penciledValues.length > 0) {
+				return this.penciledValues.join(" ");
+			} else if (!_.isNil(this.value)) {
+				return this.value;
+			} else {
+				return '';
+			}
+		}
+	},
   methods: {
 		toggle(e) {
-			console.log([`toggle:trace 1`, keysDown()]);  
+			// console.log([`toggle:trace 1`, keysDown()]);  
 			
 			switch(keysDown()[0]) {
 				case 'r':
@@ -42,12 +59,27 @@ export default {
 		},
   }, 
 	mounted() {
+		window.Event.$on(`square-event-${this.squareId}`, ({ cmd, opts }) => {
+			switch(cmd) {
+				case 'record-number':
+					const { value } = opts;
+					console.log([`square-event-${this.squareId}`, cmd, opts, value])
+					this.value = value;
+					this.penciledValues = [];
+					break;
+			}
+		});
+
 		window.Event.$on('square-event', ({ cmd, opts }) => {
 			const except = _.get(opts, 'except', []);
 			const only = _.get(opts, 'only', []);
 			// if (( !_.isNil(only) && _.includes(only, this.squareId) ) || ( _.isNil(only) && !_.includes(except, this.squareId) )) {
 			if ( !_.includes(except, this.squareId) ) {
 				switch(cmd) {
+
+					case 'record-number':
+						console.log([`square-event 1`, cmd, opts])
+						break;
 
 					case 'select':
 						const selected = _.get(opts, 'selected', false);
@@ -61,8 +93,36 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-	.sudoku-square.selected {
+<style >
+	.sudoku-square .values {
+    font-size: 18pt;
+    font-weight: bold;
+    display: inline-block;
+    height: 40px;
+    overflow-y: hidden;
+    vertical-align: top;
+    padding: 0;
+    margin: 0;
+    width: 40px;
+    position: relative;
+    top: 7px;
+	}
+	.sudoku-square .values.penciled {
+    top: 5px;
+    font-size: 8pt;
+    font-weight: normal;
+    line-height: 13px;
+    letter-spacing: 2px;
+    padding-left: 2px;
+	}
+
+	.sudoku.pencil .sudoku-square{
+		background-color: #bdcebe;
+	}
+	
+	.sudoku .sudoku-square.selected, 
+	.sudoku.pencil .sudoku-square.selected {
 		background-color: orange;
 	}
+	
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="sudoku">
+  <div :class="classNames">
 
 		<div class="sudoku-block">
 			<!-- s#^			<div id="\([^"]\+\)" class="sudoku-square"></div>$#			<SudokuSquare squareId="\1"></SudokuSquare>#g -->
@@ -122,8 +122,13 @@ export default {
   components: { SudokuSquare },
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      msg: 'Welcome to Your Vue.js App', 
+			selected: null,
+			editMode: 'pen',
     }
+  }, 
+	computed: {
+		classNames() { return ['sudoku', (this.editMode === 'pencil') ? 'pencil' : '',]; },
   }, 
 	mounted() {
 
@@ -132,24 +137,38 @@ export default {
 			
 			switch(cmd) {
 
+				case 'key-pressed':
+					this.editMode = (this.editMode === 'pen') ? 'pencil' : 'pen';
+					console.log([`key-pressed 1`, cmd, opts, this.editMode])
+					break;
+
+				case 'record-number':
+					window.Event.$emit(`square-event-${this.selected}`, { cmd: 'record-number', opts: {...opts, reqBy: this.selected} } );
+					// console.log([`sudoku-event 1`, cmd, opts, this.selected])
+					break;
+
 				case 'square-select':
+					this.selected = opts.reqBy;
 					window.Event.$emit('square-event', { cmd: 'select', opts } );
 					break;
 
 				case 'square-select-row':
 					// console.log([`opts:trace 1`, opts]);  
+					this.selected = opts.reqBy;
 					squareIds = gatherRow(opts.reqBy);
 					window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
 					break;
 
 				case 'square-select-col':
 					// console.log([`opts:trace 1`, opts]);  
+					this.selected = opts.reqBy;
 					squareIds = gatherCol(opts.reqBy);
 					window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
 					break;
 
 				case 'square-select-intersection':
 					// console.log([`opts:trace 1`, opts]);  
+					this.selected = opts.reqBy;
 					squareIds = gatherRow(opts.reqBy);
 					const squareIds2 = gatherCol(opts.reqBy);
 					window.Event.$emit('square-event', { cmd: 'select', opts: {only: [...squareIds, ...squareIds2], ...opts} } );
@@ -176,11 +195,11 @@ export default {
 		height: 180px; 
 		border: 1px solid transparent;
 		margin: 6px 3px 0 0;
-		padding: 2px 0;
 		display: inline-block;
 		vertical-align:top;
-		padding-top: 7px;
 		background-color: white;
+		padding-top: 7px;
+		position: relative;
 	}
 	.sudoku-block:nth-child(3), 
 	.sudoku-block:nth-child(6), 
@@ -194,11 +213,33 @@ export default {
 		border: 1px solid transparent;
 		display: inline-block;
 		background-color: #efefef;
-		margin: 0 3px 0 0;
+		position: relative;
+	}
+	.sudoku-square:nth-child(1), 
+	.sudoku-square:nth-child(4), 
+	.sudoku-square:nth-child(7) {
+		margin: 0;
+	}
+	.sudoku-square:nth-child(2), 
+	.sudoku-square:nth-child(5), 
+	.sudoku-square:nth-child(8) {
+		margin-left: 3px;
 	}
 	.sudoku-square:nth-child(3), 
 	.sudoku-square:nth-child(6), 
 	.sudoku-square:nth-child(9) {
-		margin: 0;
+		margin-left: 3px;
 	}
+
+	.sudoku-square:nth-child(4), 
+	.sudoku-square:nth-child(5), 
+	.sudoku-square:nth-child(6) {
+		top: 7px; 
+	}
+	.sudoku-square:nth-child(7), 
+	.sudoku-square:nth-child(8), 
+	.sudoku-square:nth-child(9) {
+		top: 14px; 
+	}
+	
 </style>
