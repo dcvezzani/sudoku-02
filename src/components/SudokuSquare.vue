@@ -52,6 +52,12 @@ export default {
 				case 'n':
 					break;
 
+				case 'l': // little 'L'
+					fetchSudokuData((err, data) => {
+						console.log([`fetchSudokuData`, err, data]);
+					});
+					break;
+
 				default: 
 					this.selected = !this.selected;
 					window.Event.$emit('sudoku-event', 'square-select', {selected: false, reqBy: this.squareId, except: [this.squareId]});

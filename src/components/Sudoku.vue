@@ -115,7 +115,7 @@
 
 <script>
 import SudokuSquare from "@/components/SudokuSquare"
-import { deepCloneObject, gatherRow, gatherCol, isKeyDown } from './../lib/utils'
+import { deepCloneObject, gatherRow, gatherCol, isKeyDown, fetchSudokuData, handleSudokuEvent } from './../lib/utils'
 
 export default {
   name: 'Sudoku',
@@ -130,50 +130,19 @@ export default {
 	computed: {
 		classNames() { return ['sudoku', (this.editMode === 'pencil') ? 'pencil' : '',]; },
   }, 
+  sockets:{
+    connect: function(){
+      console.log('socket connected');
+      this.$socket.emit('join', 'Hello World from client');
+    },
+    "sudoku-event": function(response){
+			const { cmd, err, data } = response;
+			handleSudokuEvent(this.$socket, cmd, { data }, err);
+    },
+  },
 	mounted() {
-
 		window.Event.$on('sudoku-event', (cmd, opts) => {
-			let squareIds = null;
-			
-			switch(cmd) {
-
-				case 'key-pressed':
-					this.editMode = (this.editMode === 'pen') ? 'pencil' : 'pen';
-					console.log([`key-pressed 1`, cmd, opts, this.editMode])
-					break;
-
-				case 'record-number':
-					window.Event.$emit(`square-event-${this.selected}`, { cmd: 'record-number', opts: {...opts, reqBy: this.selected, editMode: this.editMode} } );
-					// console.log([`sudoku-event 1`, cmd, opts, this.selected])
-					break;
-
-				case 'square-select':
-					this.selected = opts.reqBy;
-					window.Event.$emit('square-event', { cmd: 'select', opts } );
-					break;
-
-				case 'square-select-row':
-					// console.log([`opts:trace 1`, opts]);  
-					this.selected = opts.reqBy;
-					squareIds = gatherRow(opts.reqBy);
-					window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
-					break;
-
-				case 'square-select-col':
-					// console.log([`opts:trace 1`, opts]);  
-					this.selected = opts.reqBy;
-					squareIds = gatherCol(opts.reqBy);
-					window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
-					break;
-
-				case 'square-select-intersection':
-					// console.log([`opts:trace 1`, opts]);  
-					this.selected = opts.reqBy;
-					squareIds = gatherRow(opts.reqBy);
-					const squareIds2 = gatherCol(opts.reqBy);
-					window.Event.$emit('square-event', { cmd: 'select', opts: {only: [...squareIds, ...squareIds2], ...opts} } );
-					break;
-			}
+			handleSudokuEvent(this.$socket, cmd, opts);
 		});
 	}
 }

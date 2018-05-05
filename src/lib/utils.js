@@ -28,9 +28,17 @@ export const isKeyDown = (() => {
 				window.Event.$emit("sudoku-event", "record-number", {value: e.key});
 			} else if (_.includes(['r','c','i'], e.key)) {
 				keyState[e.key] = true
-			} else if (_.includes(['p',], e.key)) {
+			} else { // if (_.includes(['p',], e.key))
 				// console.log(`keydown:p`);
-				window.Event.$emit("sudoku-event", "key-pressed", {value: e.key});
+				let action = null;
+				switch(e.key) {
+					case 'p': action = 'key-pressed'; break;
+					case 'l': action = 'fetch-data'; break;
+				}
+
+				if (action !== null) {
+					window.Event.$emit("sudoku-event", action, {value: e.key});
+				}
 			}
 			// switch(e.key) {
 			// 	case 1: 
@@ -51,3 +59,61 @@ export const keysDown = (() => {
 		}
 })();
 
+export const fetchSudokuData = (callback) => {
+}
+
+export const handleSudokuEvent = (socket, cmd, opts, err=null) => {
+	let squareIds = null;
+	
+	switch(cmd) {
+
+		case 'key-pressed':
+			this.editMode = (this.editMode === 'pen') ? 'pencil' : 'pen';
+			console.log([`key-pressed 1`, cmd, opts, this.editMode])
+			break;
+
+		case 'fetch-data':
+			socket.emit('fetch-data');
+			break;
+
+		case 'data-fetched':
+			const { data } = opts;
+			console.log([`data-fetched`, cmd, opts, data]);
+			let sudokuData = JSON.parse(data);
+			console.log([`sudokuData`, JSON.stringify(sudokuData)]);
+			break;
+
+		case 'record-number':
+			window.Event.$emit(`square-event-${this.selected}`, { cmd: 'record-number', opts: {...opts, reqBy: this.selected, editMode: this.editMode} } );
+			// console.log([`sudoku-event 1`, cmd, opts, this.selected])
+			break;
+
+		case 'square-select':
+			this.selected = opts.reqBy;
+			window.Event.$emit('square-event', { cmd: 'select', opts } );
+			break;
+
+		case 'square-select-row':
+			// console.log([`opts:trace 1`, opts]);  
+			this.selected = opts.reqBy;
+			squareIds = gatherRow(opts.reqBy);
+			window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
+			break;
+
+		case 'square-select-col':
+			// console.log([`opts:trace 1`, opts]);  
+			this.selected = opts.reqBy;
+			squareIds = gatherCol(opts.reqBy);
+			window.Event.$emit('square-event', { cmd: 'select', opts: {only: squareIds, ...opts} } );
+			break;
+
+		case 'square-select-intersection':
+			// console.log([`opts:trace 1`, opts]);  
+			this.selected = opts.reqBy;
+			squareIds = gatherRow(opts.reqBy);
+			const squareIds2 = gatherCol(opts.reqBy);
+			window.Event.$emit('square-event', { cmd: 'select', opts: {only: [...squareIds, ...squareIds2], ...opts} } );
+			break;
+	}
+}
+	

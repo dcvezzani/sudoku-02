@@ -3,11 +3,14 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import VueSocketio from 'vue-socket.io';
 
 // Require the main Sass manifest file
 require('./assets/sass/main.scss');
 
 window.Event = new Vue();
+
+Vue.use(VueSocketio, 'http://localhost:4200');
 
 Vue.config.productionTip = false
 
